@@ -1,0 +1,6 @@
+agent-framework-devui==1.0.0b251120
+agent-framework==1.0.0b251120
+python-dotenv
+matplotlib
+psutil
+azure-monitor-opentelemetry-exporter>=1.0.0b4

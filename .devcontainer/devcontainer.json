@@ -1,0 +1,42 @@
+{
+    "name": "Azure Developer CLI",
+    "build": { "dockerfile": "Dockerfile" },
+    "features": {
+        "ghcr.io/devcontainers/features/azure-cli:1": {
+            "version": "2.62.0"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {
+            "version": "2"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.azure-dev",
+                "ms-azuretools.vscode-bicep",
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint",
+                "github.vscode-github-actions",
+                "github.copilot",
+                "ms-python.black-formatter",
+                "ms-toolsai.jupyter",
+                "teamsdevapp.vscode-ai-foundry"
+            ]
+        },
+        "codespaces": {
+            "openFiles": [
+                "main.py"
+            ]
+        }
+    },
+    "runArgs": [
+        "--dns=8.8.8.8"
+    ],
+    "postAttachCommand": "",
+    "remoteUser": "vscode",
+    "hostRequirements": {
+        "memory": "4gb",
+        "cpus": 4
+    },
+    "postCreateCommand": "echo 'export PATH=\"$HOME/.cargo/bin:$PATH\"' >> ~/.bashrc && source ~/.bashrc"
+}

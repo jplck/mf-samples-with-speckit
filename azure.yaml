@@ -1,0 +1,9 @@
+name: agentic-demo-env
+metadata:
+  template: openai-plugin-fastapi@0.0.1-beta
+hooks:
+  postdeploy:
+      shell: sh
+      run: cp .azure/$AZURE_ENV_NAME/.env ./
+infra:
+  provider: bicep
