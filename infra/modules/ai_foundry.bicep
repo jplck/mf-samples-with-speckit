@@ -3,7 +3,7 @@ param name string
 param project_name string
 param applicationInsightsName string
 
-resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
+resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
   name: name
   location: location
   identity: {
@@ -21,7 +21,7 @@ resource aiFoundry 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' = {
   }
 }
 
-resource aiProject 'Microsoft.CognitiveServices/accounts/projects@2025-04-01-preview' = {
+resource aiProject 'Microsoft.CognitiveServices/accounts/projects@2025-10-01-preview' = {
   name: project_name
   parent: aiFoundry
   location: location
@@ -36,7 +36,7 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' existing = {
   name: applicationInsightsName
 }
 
-resource accounts_test2155_name_firstProject_appInsights_connection_3703 'Microsoft.CognitiveServices/accounts/projects/connections@2025-06-01' = {
+resource accounts_test2155_name_firstProject_appInsights_connection_3703 'Microsoft.CognitiveServices/accounts/projects/connections@2025-10-01-preview' = {
   parent: aiProject
   name: 'appInsights-connection-3703'
   properties: {

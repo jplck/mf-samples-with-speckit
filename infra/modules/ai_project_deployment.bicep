@@ -14,11 +14,11 @@ var defaults = {
 
 var properties_with_defaults = union(defaults, properties)
 
-resource aiResource 'Microsoft.CognitiveServices/accounts@2025-06-01' existing = {
+resource aiResource 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' existing = {
   name: ai_services_name
 }
 
-resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2025-06-01' = {
+resource deployment 'Microsoft.CognitiveServices/accounts/deployments@2025-10-01-preview' = {
   parent: aiResource
   name: name
   sku: properties_with_defaults.sku
