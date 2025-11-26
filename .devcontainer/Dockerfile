@@ -1,10 +1,10 @@
-ARG VARIANT=bullseye
+ARG VARIANT=bookworm
 ARG VERSION=3.12
 FROM --platform=amd64 mcr.microsoft.com/devcontainers/python:${VERSION}-${VARIANT}
 
 RUN export DEBIAN_FRONTEND=noninteractive \
-    && curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc \
-    && curl https://packages.microsoft.com/config/debian/11/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list\
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && curl https://packages.microsoft.com/config/debian/12/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list\
     && apt-get update \
     && apt-get install -y xdg-utils unixodbc \
     && apt-get clean -y \

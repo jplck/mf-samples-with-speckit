@@ -17,6 +17,9 @@
       "aiFoundryProjectName": {
         "value": "${AZURE_AI_PROJECT_NAME}"
       },
+      "existingAcrName": {
+        "value": "${EXISTING_ACR_NAME=}"
+      },
       "aiDeploymentsLocation": {
         "value": "${AZURE_LOCATION}"
       },
@@ -37,9 +40,6 @@
       },
       "enableMonitoring": {
         "value": "${ENABLE_MONITORING=true}"
-      },
-      "enableHostedAgents": {
-        "value": "${ENABLE_HOSTED_AGENTS=true}"
       }
     }
 }

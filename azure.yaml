@@ -3,7 +3,13 @@ metadata:
   template: openai-plugin-fastapi@0.0.1-beta
 hooks:
   postdeploy:
+    - name: copy-env-file
+      description: Copy environment file from azd environment folder
       shell: sh
       run: cp .azure/$AZURE_ENV_NAME/.env ./
+    - name: build-and-push-container-images
+      description: Build and push container images to ACR
+      shell: sh
+      run: ./scripts/postdeploy.sh product-agent:./src/agents/product-agent order-agent:./src/agents/order-agent
 infra:
   provider: bicep

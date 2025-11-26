@@ -78,9 +78,6 @@ var aiProjectDeployments = json(aiProjectDeploymentsJson)
 var aiProjectConnections = json(aiProjectConnectionsJson)
 var aiProjectDependentResources = json(aiProjectDependentResourcesJson)
 
-@description('Enable hosted agent deployment')
-param enableHostedAgents bool
-
 @description('Enable monitoring for the AI project')
 param enableMonitoring bool = true
 
@@ -100,15 +97,13 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// Build dependent resources array conditionally
-// Check if ACR already exists in the user-provided array to avoid duplicates
-var hasAcr = contains(map(aiProjectDependentResources, r => r.resource), 'registry')
-var dependentResources = (enableHostedAgents) && !hasAcr ? union(aiProjectDependentResources, [
+// Build dependent resources array - always include ACR
+var dependentResources = union(aiProjectDependentResources, [
   {
     resource: 'registry'
     connectionName: 'acr-connection'
   }
-]) : aiProjectDependentResources
+])
 
 // AI Project module
 module aiProject 'core/ai/ai-project.bicep' = {
@@ -125,7 +120,6 @@ module aiProject 'core/ai/ai-project.bicep' = {
     connections: aiProjectConnections
     additionalDependentResources: dependentResources
     enableMonitoring: enableMonitoring
-    enableHostedAgents: enableHostedAgents
   }
 }
 

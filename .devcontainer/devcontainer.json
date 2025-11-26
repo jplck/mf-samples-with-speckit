@@ -38,5 +38,5 @@
         "memory": "4gb",
         "cpus": 4
     },
-    "postCreateCommand": "echo 'export PATH=\"$HOME/.cargo/bin:$PATH\"' >> ~/.bashrc && source ~/.bashrc"
+    "postCreateCommand": "bash -c \"echo 'export PATH=\\\"$HOME/.cargo/bin:$PATH\\\"' >> ~/.bashrc\""
 }
