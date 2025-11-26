@@ -31,6 +31,9 @@ param additionalDependentResources dependentResourcesType
 @description('Enable monitoring via appinsights and log analytics')
 param enableMonitoring bool = true
 
+@description('Enable hosted agent deployment')
+param enableHostedAgents bool = false
+
 // Load abbreviations
 var abbrs = loadJsonContent('../../abbreviations.json')
 
@@ -64,13 +67,13 @@ module applicationInsights '../monitor/applicationinsights.bicep' = if (enableMo
     location: location
     tags: tags
     name: 'appi-${resourceToken}'
-    logAnalyticsWorkspaceId: logAnalytics!.outputs.id
+    logAnalyticsWorkspaceId: logAnalytics.outputs.id
   }
 }
 
 // Always create a new AI Account for now (simplified approach)
 // TODO: Add support for existing accounts in a future version
-resource aiAccount 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
+resource aiAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: !empty(existingAiAccountName) ? existingAiAccountName : 'ai-account-${resourceToken}'
   location: location
   tags: tags
@@ -119,30 +122,33 @@ resource aiAccount 'Microsoft.CognitiveServices/accounts@2025-10-01-preview' = {
     ]
   }
 
-  resource symbolicname 'capabilityHosts@2025-10-01-preview' = {
+  resource aiFoundryAccountCapabilityHost 'capabilityHosts@2025-10-01-preview' = if (enableHostedAgents) {
     name: 'agents'
     properties: {
       capabilityHostKind: 'Agents'
+      // IMPORTANT: this is required to enable hosted agents deployment
+      // if no BYO Net is provided
       enablePublicHostingEnvironment: true
     }
   }
 }
 
+
 // Create connection towards appinsights
-resource appInsightConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-10-01-preview' = if (enableMonitoring) {
+resource appInsightConnection 'Microsoft.CognitiveServices/accounts/projects/connections@2025-04-01-preview' = {
   parent: aiAccount::project
   name: 'appi-connection'
   properties: {
     category: 'AppInsights'
-    target: applicationInsights!.outputs.id
+    target: applicationInsights.outputs.id
     authType: 'ApiKey'
     isSharedToAll: true
     credentials: {
-      key: applicationInsights!.outputs.connectionString
+      key: applicationInsights.outputs.connectionString
     }
     metadata: {
       ApiType: 'Azure'
-      ResourceId: applicationInsights!.outputs.id
+      ResourceId: applicationInsights.outputs.id
     }
   }
 }
@@ -279,7 +285,7 @@ output aiServicesAccountName string = aiAccount.name
 output aiServicesProjectName string = aiAccount::project.name
 output aiServicesPrincipalId string = aiAccount.identity.principalId
 output projectName string = aiAccount::project.name
-output APPLICATIONINSIGHTS_CONNECTION_STRING string = enableMonitoring ? applicationInsights!.outputs.connectionString : ''
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = applicationInsights.outputs.connectionString
 
 // Grouped dependent resources outputs
 output dependentResources object = {

@@ -1,155 +1,154 @@
-import os
-import logging
+# Copyright (c) Microsoft. All rights reserved.
 
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-from langchain_core.messages import SystemMessage, ToolMessage
-from langchain_core.tools import tool
-from langgraph.graph import (
-    END,
-    START,
-    MessagesState,
-    StateGraph,
+import asyncio
+from collections.abc import AsyncIterable
+from typing import Any
+
+from agent_framework import (
+    AgentRunResponse,
+    AgentRunResponseUpdate,
+    AgentThread,
+    BaseAgent,
+    ChatMessage,
+    Role,
+    TextContent,
 )
-from typing_extensions import Literal
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.ai.agentserver.agentframework import from_agent_framework
 
-from azure.ai.agentserver.langgraph import from_langgraph
-from azure.monitor.opentelemetry import configure_azure_monitor
+"""
+Custom Agent Implementation Example
 
-logger = logging.getLogger(__name__)
-
-load_dotenv()
-
-if os.getenv("APPLICATIONINSIGHTS_CONNECTION_STRING"):
-    configure_azure_monitor(enable_live_metrics=True, logger_name="__main__")
-
-deployment_name = os.getenv("AZURE_AI_MODEL_DEPLOYMENT_NAME", "gpt-4o-mini")
-
-try:
-    credential = DefaultAzureCredential()
-    token_provider = get_bearer_token_provider(
-        credential, "https://cognitiveservices.azure.com/.default"
-    )
-    llm = init_chat_model(
-        f"azure_openai:{deployment_name}",
-        azure_ad_token_provider=token_provider,
-    )
-except Exception:
-    logger.exception("Calculator Agent failed to start")
-    raise
+This sample demonstrates implementing a custom agent by extending BaseAgent class,
+showing the minimal requirements for both streaming and non-streaming responses.
+"""
 
 
-# Define tools
-@tool
-def multiply(a: int, b: int) -> int:
-    """Multiply a and b.
+class EchoAgent(BaseAgent):
+    """A simple custom agent that echoes user messages with a prefix.
 
-    Args:
-        a: first int
-        b: second int
+    This demonstrates how to create a fully custom agent by extending BaseAgent
+    and implementing the required run() and run_stream() methods.
     """
-    return a * b
 
+    echo_prefix: str = "Echo: "
 
-@tool
-def add(a: int, b: int) -> int:
-    """Adds a and b.
+    def __init__(
+        self,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        echo_prefix: str = "Echo: ",
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the EchoAgent.
 
-    Args:
-        a: first int
-        b: second int
-    """
-    return a + b
+        Args:
+            name: The name of the agent.
+            description: The description of the agent.
+            echo_prefix: The prefix to add to echoed messages.
+            **kwargs: Additional keyword arguments passed to BaseAgent.
+        """
+        super().__init__(
+            name=name,
+            description=description,
+            echo_prefix=echo_prefix,  # type: ignore
+            **kwargs,
+        )
 
+    async def run(
+        self,
+        messages: str | ChatMessage | list[str] | list[ChatMessage] | None = None,
+        *,
+        thread: AgentThread | None = None,
+        **kwargs: Any,
+    ) -> AgentRunResponse:
+        """Execute the agent and return a complete response.
 
-@tool
-def divide(a: int, b: int) -> float:
-    """Divide a and b.
+        Args:
+            messages: The message(s) to process.
+            thread: The conversation thread (optional).
+            **kwargs: Additional keyword arguments.
 
-    Args:
-        a: first int
-        b: second int
-    """
-    return a / b
+        Returns:
+            An AgentRunResponse containing the agent's reply.
+        """
+        # Normalize input messages to a list
+        normalized_messages = self._normalize_messages(messages)
 
-
-# Augment the LLM with tools
-tools = [add, multiply, divide]
-tools_by_name = {tool.name: tool for tool in tools}
-llm_with_tools = llm.bind_tools(tools)
-
-# Nodes
-def llm_call(state: MessagesState):
-    """LLM decides whether to call a tool or not"""
-
-    return {
-        "messages": [
-            llm_with_tools.invoke(
-                [
-                    SystemMessage(
-                        content="You are a helpful assistant tasked with performing arithmetic on a set of inputs."
-                    )
-                ]
-                + state["messages"]
+        if not normalized_messages:
+            response_message = ChatMessage(
+                role=Role.ASSISTANT,
+                contents=[TextContent(text="Hello! I'm a custom echo agent. Send me a message and I'll echo it back.")],
             )
-        ]
-    }
+        else:
+            # For simplicity, echo the last user message
+            last_message = normalized_messages[-1]
+            if last_message.text:
+                echo_text = f"{self.echo_prefix}{last_message.text}"
+            else:
+                echo_text = f"{self.echo_prefix}[Non-text message received]"
+
+            response_message = ChatMessage(role=Role.ASSISTANT, contents=[TextContent(text=echo_text)])
+
+        # Notify the thread of new messages if provided
+        if thread is not None:
+            await self._notify_thread_of_new_messages(thread, normalized_messages, response_message)
+
+        return AgentRunResponse(messages=[response_message])
+
+    async def run_stream(
+        self,
+        messages: str | ChatMessage | list[str] | list[ChatMessage] | None = None,
+        *,
+        thread: AgentThread | None = None,
+        **kwargs: Any,
+    ) -> AsyncIterable[AgentRunResponseUpdate]:
+        """Execute the agent and yield streaming response updates.
+
+        Args:
+            messages: The message(s) to process.
+            thread: The conversation thread (optional).
+            **kwargs: Additional keyword arguments.
+
+        Yields:
+            AgentRunResponseUpdate objects containing chunks of the response.
+        """
+        # Normalize input messages to a list
+        normalized_messages = self._normalize_messages(messages)
+
+        if not normalized_messages:
+            response_text = "Hello! I'm a custom echo agent. Send me a message and I'll echo it back."
+        else:
+            # For simplicity, echo the last user message
+            last_message = normalized_messages[-1]
+            if last_message.text:
+                response_text = f"{self.echo_prefix}{last_message.text}"
+            else:
+                response_text = f"{self.echo_prefix}[Non-text message received]"
+
+        # Simulate streaming by yielding the response word by word
+        words = response_text.split()
+        for i, word in enumerate(words):
+            # Add space before word except for the first one
+            chunk_text = f" {word}" if i > 0 else word
+
+            yield AgentRunResponseUpdate(
+                contents=[TextContent(text=chunk_text)],
+                role=Role.ASSISTANT,
+            )
+
+            # Small delay to simulate streaming
+            await asyncio.sleep(0.1)
+
+        # Notify the thread of the complete response if provided
+        if thread is not None:
+            complete_response = ChatMessage(role=Role.ASSISTANT, contents=[TextContent(text=response_text)])
+            await self._notify_thread_of_new_messages(thread, normalized_messages, complete_response)
 
 
-def tool_node(state: dict):
-    """Performs the tool call"""
-
-    result = []
-    for tool_call in state["messages"][-1].tool_calls:
-        tool = tools_by_name[tool_call["name"]]
-        observation = tool.invoke(tool_call["args"])
-        result.append(ToolMessage(content=observation, tool_call_id=tool_call["id"]))
-    return {"messages": result}
-
-
-# Conditional edge function to route to the tool node or end based upon whether the LLM made a tool call
-def should_continue(state: MessagesState) -> Literal["environment", END]:
-    """Decide if we should continue the loop or stop based upon whether the LLM made a tool call"""
-
-    messages = state["messages"]
-    last_message = messages[-1]
-    # If the LLM makes a tool call, then perform an action
-    if last_message.tool_calls:
-        return "Action"
-    # Otherwise, we stop (reply to the user)
-    return END
-
-
-# Build workflow
-def build_agent() -> "StateGraph":
-    agent_builder = StateGraph(MessagesState)
-
-    # Add nodes
-    agent_builder.add_node("llm_call", llm_call)
-    agent_builder.add_node("environment", tool_node)
-
-    # Add edges to connect nodes
-    agent_builder.add_edge(START, "llm_call")
-    agent_builder.add_conditional_edges(
-        "llm_call",
-        should_continue,
-        {
-            "Action": "environment",
-            END: END,
-        },
-    )
-    agent_builder.add_edge("environment", "llm_call")
-
-    # Compile the agent
-    return agent_builder.compile()
-
-# Build workflow and run agent
 if __name__ == "__main__":
-    try:
-        agent = build_agent()
-        adapter = from_langgraph(agent)
-        adapter.run()
-    except Exception:
-        logger.exception("Calculator Agent encountered an error while running")
-        raise
+    agent = EchoAgent(
+        name="EchoBot", description="A simple agent that echoes messages with a prefix", echo_prefix="🔊 Echo: "
+    )
+
+    from_agent_framework(agent).run()

@@ -2,8 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-COPY . order_agent/
-WORKDIR /app/order_agent
+COPY . user_agent/
+WORKDIR /app/user_agent
 
 RUN if [ -f requirements.txt ]; then \
         pip install -r requirements.txt; \

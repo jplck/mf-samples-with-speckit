@@ -66,7 +66,7 @@ param aiFoundryResourceName string = ''
 param aiFoundryProjectName string = 'ai-project-${environmentName}'
 
 @description('List of model deployments')
-param aiProjectDeploymentsJson string = '[]'
+param aiProjectDeploymentsJson string = '[{"name":"o4-mini","model":{"name":"o4-mini","format":"OpenAI","version":"2025-04-16"},"sku":{"name":"GlobalStandard","capacity":1}}]'
 
 @description('List of connections')
 param aiProjectConnectionsJson string = '[]'
@@ -77,6 +77,9 @@ param aiProjectDependentResourcesJson string = '[]'
 var aiProjectDeployments = json(aiProjectDeploymentsJson)
 var aiProjectConnections = json(aiProjectConnectionsJson)
 var aiProjectDependentResources = json(aiProjectDependentResourcesJson)
+
+@description('Enable hosted agent deployment')
+param enableHostedAgents bool
 
 @description('Enable monitoring for the AI project')
 param enableMonitoring bool = true
@@ -97,13 +100,15 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
-// Build dependent resources array - always include ACR
-var dependentResources = union(aiProjectDependentResources, [
+// Build dependent resources array conditionally
+// Check if ACR already exists in the user-provided array to avoid duplicates
+var hasAcr = contains(map(aiProjectDependentResources, r => r.resource), 'registry')
+var dependentResources = (enableHostedAgents) && !hasAcr ? union(aiProjectDependentResources, [
   {
     resource: 'registry'
     connectionName: 'acr-connection'
   }
-])
+]) : aiProjectDependentResources
 
 // AI Project module
 module aiProject 'core/ai/ai-project.bicep' = {
@@ -120,6 +125,7 @@ module aiProject 'core/ai/ai-project.bicep' = {
     connections: aiProjectConnections
     additionalDependentResources: dependentResources
     enableMonitoring: enableMonitoring
+    enableHostedAgents: enableHostedAgents
   }
 }
 
@@ -159,4 +165,6 @@ output AZURE_AI_SEARCH_SERVICE_NAME string = aiProject.outputs.dependentResource
 // Azure Storage
 output AZURE_STORAGE_CONNECTION_NAME string = aiProject.outputs.dependentResources.storage.connectionName
 output AZURE_STORAGE_ACCOUNT_NAME string = aiProject.outputs.dependentResources.storage.accountName
+
+output MODEL_DEPLOYMENT_NAME string = 'o4-mini'
 

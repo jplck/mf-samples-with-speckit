@@ -16,7 +16,8 @@ def get_env(name: str, required: bool = True, default: str | None = None) -> str
 
 def main() -> None:
   # These come from azd / Bicep outputs and the container images we built
-  project_endpoint = get_env("AZURE_AI_PROJECT_ENDPOINT")
+  project_endpoint = get_env("AZURE_AI_PROJECT_ENDPOINT", required=True)
+  model_deployment_name = get_env("MODEL_DEPLOYMENT_NAME", required=True, default="o4-mini")
 
   credential = DefaultAzureCredential()
 
@@ -54,6 +55,7 @@ def main() -> None:
               image=image_tag,
               environment_variables={
                   "AZURE_AI_PROJECT_ENDPOINT": project_endpoint,
+                  "AZURE_AI_MODEL_DEPLOYMENT_NAME": model_deployment_name
               },
           ),
       )
