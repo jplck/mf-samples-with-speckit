@@ -55,7 +55,8 @@ def main() -> None:
               image=image_tag,
               environment_variables={
                   "AZURE_AI_PROJECT_ENDPOINT": project_endpoint,
-                  "AZURE_AI_MODEL_DEPLOYMENT_NAME": model_deployment_name
+                  "AZURE_AI_MODEL_DEPLOYMENT_NAME": model_deployment_name,
+                  "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": model_deployment_name
               },
           ),
       )

@@ -4,5 +4,5 @@ python-dotenv
 matplotlib
 psutil
 azure-monitor-opentelemetry-exporter>=1.0.0b4
-azure-ai-agentserver-agentframework
+azure-ai-agentserver-agentframework==1.0.0b3
 azure-ai-projects>=2.0.0b1

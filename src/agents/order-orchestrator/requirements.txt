@@ -1,6 +1,7 @@
 azure-ai-agentserver-agentframework==1.0.0b3
 agent-framework
-azure-ai-projects==1.1.0b4
+azure-ai-projects>=2.0.0b1
+pydantic>=2.0
 
 pytest==8.4.2
 azure-identity==1.25.0
