@@ -1,0 +1,38 @@
+kind: workflow
+trigger:
+  kind: OnConversationStart
+  id: trigger_wf
+  actions:
+    - kind: InvokeAzureAgent
+      id: action-1764230110845
+      agent:
+        name: order-orchestrator
+      input:
+        messages: =System.LastMessage
+      output:
+        autoSend: true
+        messages: Local.GoTo
+        responseObject: Local.GotoJson
+    - kind: ConditionGroup
+      conditions:
+        - condition: |-
+            =If(
+                Text(Local.GotoJson.goto.next_agent) = "product-search",
+                true,
+                false
+            )
+          actions:
+            - kind: InvokeAzureAgent
+              id: action-1764237149250
+              agent:
+                name: product-search
+              input:
+                messages: =System.LastMessage
+              output:
+                autoSend: true
+          id: if-action-1764230155405-0
+      id: action-1764230155405
+      elseActions: []
+id: ""
+name: flow1
+description: ""

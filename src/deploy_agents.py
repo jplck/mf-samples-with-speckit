@@ -17,8 +17,9 @@ def get_env(name: str, required: bool = True, default: str | None = None) -> str
 def main() -> None:
   # These come from azd / Bicep outputs and the container images we built
   project_endpoint = get_env("AZURE_AI_PROJECT_ENDPOINT", required=True)
-  model_deployment_name = get_env("MODEL_DEPLOYMENT_NAME", required=True, default="o4-mini")
+  model_deployment_name = get_env("AZURE_AI_MODEL_DEPLOYMENT_NAME", required=True, default="o4-mini")
   aoai_endpoint = get_env("AZURE_OPENAI_ENDPOINT", required=True)
+  openai_api_version = get_env("OPENAI_API_VERSION", required=True, default="2024-05-01-preview")
 
   credential = DefaultAzureCredential()
 
@@ -59,6 +60,7 @@ def main() -> None:
                   "AZURE_AI_MODEL_DEPLOYMENT_NAME": model_deployment_name,
                   "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": model_deployment_name,
                   "AZURE_OPENAI_ENDPOINT": aoai_endpoint,
+                  "OPENAI_API_VERSION": openai_api_version,
               },
           ),
       )

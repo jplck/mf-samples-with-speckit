@@ -66,7 +66,7 @@ param aiFoundryResourceName string = ''
 param aiFoundryProjectName string = 'ai-project-${environmentName}'
 
 @description('List of model deployments')
-param aiProjectDeploymentsJson string = '[{"name":"o4-mini","model":{"name":"o4-mini","format":"OpenAI","version":"2025-04-16"},"sku":{"name":"GlobalStandard","capacity":1}}]'
+param aiProjectDeploymentsJson string = '[{"name":"gpt-4.1-mini","model":{"name":"gpt-4.1-mini","format":"OpenAI","version":"2025-04-14"},"sku":{"name":"GlobalStandard","capacity":1}}]'
 
 @description('List of connections')
 param aiProjectConnectionsJson string = '[]'
@@ -130,12 +130,12 @@ module aiProject 'core/ai/ai-project.bicep' = {
 }
 
 // Resources
-output AZURE_RESOURCE_GROUP string = resourceGroupName
-output AZURE_AI_ACCOUNT_ID string = aiProject.outputs.accountId
-output AZURE_AI_PROJECT_ID string = aiProject.outputs.projectId
-output AZURE_AI_FOUNDRY_PROJECT_ID string = aiProject.outputs.projectId
-output AZURE_AI_ACCOUNT_NAME string = aiProject.outputs.aiServicesAccountName
-output AZURE_AI_PROJECT_NAME string = aiProject.outputs.projectName
+//output AZURE_RESOURCE_GROUP string = resourceGroupName
+//output AZURE_AI_ACCOUNT_ID string = aiProject.outputs.accountId
+//output AZURE_AI_PROJECT_ID string = aiProject.outputs.projectId
+//output AZURE_AI_FOUNDRY_PROJECT_ID string = aiProject.outputs.projectId
+//output AZURE_AI_ACCOUNT_NAME string = aiProject.outputs.aiServicesAccountName
+//output AZURE_AI_PROJECT_NAME string = aiProject.outputs.projectName
 
 // Endpoints
 output AZURE_AI_PROJECT_ENDPOINT string = aiProject.outputs.AZURE_AI_PROJECT_ENDPOINT
@@ -145,27 +145,28 @@ output APPLICATIONINSIGHTS_CONNECTION_STRING string = aiProject.outputs.APPLICAT
 // Dependent Resources and Connections
 
 // ACR
-output AZURE_AI_PROJECT_ACR_CONNECTION_NAME string = aiProject.outputs.dependentResources.registry.connectionName
+//output AZURE_AI_PROJECT_ACR_CONNECTION_NAME string = aiProject.outputs.dependentResources.registry.connectionName
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = aiProject.outputs.dependentResources.registry.loginServer
 
 // Bing Search
-output BING_GROUNDING_CONNECTION_NAME  string = aiProject.outputs.dependentResources.bing_grounding.connectionName
-output BING_GROUNDING_RESOURCE_NAME string = aiProject.outputs.dependentResources.bing_grounding.name
-output BING_GROUNDING_CONNECTION_ID string = aiProject.outputs.dependentResources.bing_grounding.connectionId
+//output BING_GROUNDING_CONNECTION_NAME  string = aiProject.outputs.dependentResources.bing_grounding.connectionName
+//output BING_GROUNDING_RESOURCE_NAME string = aiProject.outputs.dependentResources.bing_grounding.name
+//output BING_GROUNDING_CONNECTION_ID string = aiProject.outputs.dependentResources.bing_grounding.connectionId
 
 // Bing Custom Search
-output BING_CUSTOM_GROUNDING_CONNECTION_NAME string = aiProject.outputs.dependentResources.bing_custom_grounding.connectionName
-output BING_CUSTOM_GROUNDING_NAME string = aiProject.outputs.dependentResources.bing_custom_grounding.name
-output BING_CUSTOM_GROUNDING_CONNECTION_ID string = aiProject.outputs.dependentResources.bing_custom_grounding.connectionId
+//output BING_CUSTOM_GROUNDING_CONNECTION_NAME string = aiProject.outputs.dependentResources.bing_custom_grounding.connectionName
+//output BING_CUSTOM_GROUNDING_NAME string = aiProject.outputs.dependentResources.bing_custom_grounding.name
+//output BING_CUSTOM_GROUNDING_CONNECTION_ID string = aiProject.outputs.dependentResources.bing_custom_grounding.connectionId
 
 // Azure AI Search
-output AZURE_AI_SEARCH_CONNECTION_NAME string = aiProject.outputs.dependentResources.search.connectionName
-output AZURE_AI_SEARCH_SERVICE_NAME string = aiProject.outputs.dependentResources.search.serviceName
+//output AZURE_AI_SEARCH_CONNECTION_NAME string = aiProject.outputs.dependentResources.search.connectionName
+//output AZURE_AI_SEARCH_SERVICE_NAME string = aiProject.outputs.dependentResources.search.serviceName
 
 // Azure Storage
-output AZURE_STORAGE_CONNECTION_NAME string = aiProject.outputs.dependentResources.storage.connectionName
-output AZURE_STORAGE_ACCOUNT_NAME string = aiProject.outputs.dependentResources.storage.accountName
+//output AZURE_STORAGE_CONNECTION_NAME string = aiProject.outputs.dependentResources.storage.connectionName
+//output AZURE_STORAGE_ACCOUNT_NAME string = aiProject.outputs.dependentResources.storage.accountName
 
-output MODEL_DEPLOYMENT_NAME string = 'gpt-4.1-mini'
+output AZURE_AI_MODEL_DEPLOYMENT_NAME string = 'gpt-4.1-mini'
 output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = 'gpt-4.1-mini'
+output OPENAI_API_VERSION string = '2024-05-01-preview'
 
