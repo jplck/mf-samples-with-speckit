@@ -18,6 +18,7 @@ def main() -> None:
   # These come from azd / Bicep outputs and the container images we built
   project_endpoint = get_env("AZURE_AI_PROJECT_ENDPOINT", required=True)
   model_deployment_name = get_env("MODEL_DEPLOYMENT_NAME", required=True, default="o4-mini")
+  aoai_endpoint = get_env("AZURE_OPENAI_ENDPOINT", required=True)
 
   credential = DefaultAzureCredential()
 
@@ -56,7 +57,8 @@ def main() -> None:
               environment_variables={
                   "AZURE_AI_PROJECT_ENDPOINT": project_endpoint,
                   "AZURE_AI_MODEL_DEPLOYMENT_NAME": model_deployment_name,
-                  "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": model_deployment_name
+                  "AZURE_OPENAI_CHAT_DEPLOYMENT_NAME": model_deployment_name,
+                  "AZURE_OPENAI_ENDPOINT": aoai_endpoint,
               },
           ),
       )

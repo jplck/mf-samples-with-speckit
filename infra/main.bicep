@@ -166,6 +166,6 @@ output AZURE_AI_SEARCH_SERVICE_NAME string = aiProject.outputs.dependentResource
 output AZURE_STORAGE_CONNECTION_NAME string = aiProject.outputs.dependentResources.storage.connectionName
 output AZURE_STORAGE_ACCOUNT_NAME string = aiProject.outputs.dependentResources.storage.accountName
 
-output MODEL_DEPLOYMENT_NAME string = 'o4-mini'
-output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = 'o4-mini'
+output MODEL_DEPLOYMENT_NAME string = 'gpt-4.1-mini'
+output AZURE_OPENAI_CHAT_DEPLOYMENT_NAME string = 'gpt-4.1-mini'
 

@@ -56,6 +56,9 @@ Rules:
 Important: When in doubt, prefer product-search. A phrase like "I need X"
 or "I want X" without prior context about X means the user is looking to
 discover or browse products, not place an order yet.
+
+If you have all information in the context pause and ask the user for confirmation before proceeding to place an order or search again.
+This shall allow for iteration intend.
 """
 
 _HUMAN_MESSAGES: dict[str, str] = {
