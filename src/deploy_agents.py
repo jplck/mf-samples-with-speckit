@@ -47,7 +47,7 @@ def main() -> None:
       # Replace _ with - and lowercase
       agent_name = base_name.lower().replace("_", "-")
 
-      bing_conn_id = client.connections.get(os.environ["BING_CUSTOM_CONNECTION_NAME"]).id
+      bing_conn_id = client.connections.get(os.environ["BING_CUSTOM_GROUNDING_CONNECTION_NAME"]).id
 
       agent = client.agents.create_version(
           agent_name=agent_name,
