@@ -66,7 +66,7 @@ param aiFoundryResourceName string = ''
 param aiFoundryProjectName string = 'ai-project-${environmentName}'
 
 @description('List of model deployments')
-param aiProjectDeploymentsJson string = '[{"name":"gpt-4.1-mini","model":{"name":"gpt-4.1-mini","format":"OpenAI","version":"2025-04-14"},"sku":{"name":"GlobalStandard","capacity":1}}]'
+param aiProjectDeploymentsJson string = '[{"name":"gpt-4.1-mini","model":{"name":"gpt-4.1-mini","format":"OpenAI","version":"2025-04-14"},"sku":{"name":"GlobalStandard","capacity":10}}]'
 
 @description('List of connections')
 param aiProjectConnectionsJson string = '[]'

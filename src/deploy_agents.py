@@ -1,6 +1,6 @@
 import os
 from azure.ai.projects import AIProjectClient
-from azure.ai.projects.models import ImageBasedHostedAgentDefinition, ProtocolVersionRecord, AgentProtocol
+from azure.ai.projects.models import ImageBasedHostedAgentDefinition, ProtocolVersionRecord, AgentProtocol, BingCustomSearchAgentTool, BingCustomSearchToolParameters, BingCustomSearchConfiguration
 from azure.identity import DefaultAzureCredential
 
 from dotenv import load_dotenv
@@ -29,7 +29,7 @@ def main() -> None:
   )
 
   # Shared container protocol versions for hosted agents
-  protocols = [ProtocolVersionRecord(protocol=AgentProtocol.RESPONSES, version="v1")]
+  protocols = [ProtocolVersionRecord(protocol=AgentProtocol.RESPONSES, version="v2")]
 
   # Automatically discover all *_IMAGE variables in the environment
   # and create/update a hosted agent for each.
@@ -47,6 +47,8 @@ def main() -> None:
       # Replace _ with - and lowercase
       agent_name = base_name.lower().replace("_", "-")
 
+      bing_conn_id = client.connections.get(os.environ["BING_CUSTOM_CONNECTION_NAME"]).id
+
       agent = client.agents.create_version(
           agent_name=agent_name,
           description=f"Hosted agent for {agent_name}",
@@ -62,6 +64,12 @@ def main() -> None:
                   "AZURE_OPENAI_ENDPOINT": aoai_endpoint,
                   "OPENAI_API_VERSION": openai_api_version,
               },
+              tools=[BingCustomSearchAgentTool(
+                 bing_custom_search_preview=BingCustomSearchToolParameters(
+                    search_configurations=[BingCustomSearchConfiguration(
+                        project_connection_id=bing_conn_id)]
+                 )
+              )],
           ),
       )
       print(f"Agent '{agent_name}' created: {agent.id}")

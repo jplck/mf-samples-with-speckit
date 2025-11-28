@@ -38,16 +38,20 @@ param enableHostedAgents bool = false
 var abbrs = loadJsonContent('../../abbreviations.json')
 
 // Determine which resources to create based on connections
-var hasStorageConnection = length(filter(additionalDependentResources, conn => conn.resource == 'storage')) > 0
+var hasStorageConnectionInConfig = length(filter(additionalDependentResources, conn => conn.resource == 'storage')) > 0
 var hasAcrConnection = length(filter(additionalDependentResources, conn => conn.resource == 'registry')) > 0
-var hasSearchConnection = length(filter(additionalDependentResources, conn => conn.resource == 'azure_ai_search')) > 0
+var hasSearchConnectionInConfig = length(filter(additionalDependentResources, conn => conn.resource == 'azure_ai_search')) > 0
 var hasBingConnection = length(filter(additionalDependentResources, conn => conn.resource == 'bing_grounding')) > 0
 var hasBingCustomConnection = length(filter(additionalDependentResources, conn => conn.resource == 'bing_custom_grounding')) > 0
 
+// Always deploy AI Search and Storage (required for AI Search)
+var hasSearchConnection = true
+var hasStorageConnection = true
+
 // Extract connection names from ai.yaml for each resource type
-var storageConnectionName = hasStorageConnection ? filter(additionalDependentResources, conn => conn.resource == 'storage')[0].connectionName : ''
+var storageConnectionName = hasStorageConnectionInConfig ? filter(additionalDependentResources, conn => conn.resource == 'storage')[0].connectionName : 'storage-connection'
 var acrConnectionName = hasAcrConnection ? filter(additionalDependentResources, conn => conn.resource == 'registry')[0].connectionName : ''
-var searchConnectionName = hasSearchConnection ? filter(additionalDependentResources, conn => conn.resource == 'azure_ai_search')[0].connectionName : ''
+var searchConnectionName = hasSearchConnectionInConfig ? filter(additionalDependentResources, conn => conn.resource == 'azure_ai_search')[0].connectionName : 'azure-ai-search-connection'
 var bingConnectionName = hasBingConnection ? filter(additionalDependentResources, conn => conn.resource == 'bing_grounding')[0].connectionName : ''
 var bingCustomConnectionName = hasBingCustomConnection ? filter(additionalDependentResources, conn => conn.resource == 'bing_custom_grounding')[0].connectionName : ''
 

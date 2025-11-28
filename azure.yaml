@@ -10,6 +10,6 @@ hooks:
     - name: build-and-push-container-images
       description: Build and push container images to ACR
       shell: sh
-      run: ./scripts/postdeploy.sh order-orchestrator:./src/agents/order-orchestrator order:./src/agents/order
+      run: ./scripts/postdeploy.sh order-orchestrator:./src/agents/order-orchestrator order:./src/agents/order product-search:./src/agents/product-search
 infra:
   provider: bicep
