@@ -18,5 +18,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 # Install Azure Developer CLI (azd)
 RUN curl -fsSL https://aka.ms/install-azd.sh | bash
 
+RUN uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+
 # Add cargo, uv, and azd to PATH for all users
 ENV PATH="/root/.cargo/bin:/root/.azd/bin:${PATH}"

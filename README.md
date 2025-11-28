@@ -43,7 +43,7 @@ The glue is implemented via the `postdeploy` hooks in `azure.yaml` and the `scri
 
    During `azd up` the following happens:
 
-   - Bicep templates in `infra/` are deployed (AI project, ACR, storage, monitoring, etc.).
+   - Bicep templates in `infra/` are deployed (AI project, ACR, storage, monitoring, Bing Custom Search, etc.).
    - `azd` writes an environment-specific `.env` file into `.azure/<env-name>/.env` with outputs like `AZURE_AI_PROJECT_ENDPOINT`, `AZURE_CONTAINER_REGISTRY_ENDPOINT`, etc.
    - The **postdeploy hooks** defined in `azure.yaml` run automatically (see below).
 
@@ -52,7 +52,18 @@ The glue is implemented via the `postdeploy` hooks in `azure.yaml` and the `scri
    After `azd up` completes successfully, you should have:
 
    - A `.env` file at the repo root populated with connection info and image URLs
-   - One or more hosted agents created in your Azure AI project
+   - Three hosted agents created in your Azure AI project:
+     - `order-orchestrator` – Routes requests to product-search or order agents
+     - `order` – Handles order placement
+     - `product-search` – Generates product results based on search queries
+
+## Included Agents
+
+| Agent | Description | Framework |
+|-------|-------------|-----------|
+| `order-orchestrator` | Intent router that classifies user messages and delegates to product-search or order agents | agent-framework |
+| `order` | Handles product ordering with tools for placing orders, checking order status, and cancellation | LangGraph |
+| `product-search` | Generates fictional product results based on user search queries using Bing Custom Search | agent-framework |
 
 ## How the `postdeploy` Hook Works
 
@@ -68,7 +79,7 @@ hooks:
     - name: build-and-push-container-images
       description: Build and push container images to ACR
       shell: sh
-      run: ./scripts/postdeploy.sh order-agent:./src/agents/order-agent
+      run: ./scripts/postdeploy.sh order-orchestrator:./src/agents/order-orchestrator order:./src/agents/order product-search:./src/agents/product-search
 ```
 
 In order, it does:
@@ -83,9 +94,10 @@ In order, it does:
    - After all images are built, runs `python deploy_agents.py` in `src/`
 
 3. **`src/deploy_agents.py`** – Reads the `.env` file (via `python-dotenv`) and:
-   - Discovers all `*_IMAGE` variables (e.g., `ORDER_AGENT_IMAGE`)
-   - Derives an agent name from each variable (e.g., `ORDER_AGENT_IMAGE` → `order-agent`)
+   - Discovers all `*_IMAGE` variables (e.g., `ORDER_ORCHESTRATOR_IMAGE`, `ORDER_IMAGE`, `PRODUCT_SEARCH_IMAGE`)
+   - Derives an agent name from each variable (e.g., `ORDER_ORCHESTRATOR_IMAGE` → `order-orchestrator`)
    - Creates or updates an **image-based hosted agent** in the Azure AI project for each image
+   - Configures each agent with Bing Custom Search tool integration
 
 Net result: every time you run `azd up` (or `azd deploy` that triggers the postdeploy hooks), your hosted agents are rebuilt and redeployed from source.
 
@@ -99,11 +111,19 @@ scripts/
 src/
   deploy_agents.py         # Creates/updates hosted agents based on *_IMAGE env vars
   agents/
-    order-agent/
-      agent.py             # Agent implementation (container entrypoint)
-      Dockerfile           # Container definition for the hosted agent
+    order/
+      agent.py             # Order agent (LangGraph-based)
+      Dockerfile           # Container definition
+    order-orchestrator/
+      agent.py             # Orchestrator agent (agent-framework-based)
+      Dockerfile           # Container definition
+    product-search/
+      agent.py             # Product search agent (agent-framework-based)
+      Dockerfile           # Container definition
   config/
     settings.py            # Helper for reading config from env
+  workflows/
+    sample.yaml            # Sample workflow configuration
 ```
 
 ## Customizing Agents and Images
@@ -114,8 +134,10 @@ src/
 
     ```yaml
     run: ./scripts/postdeploy.sh \
-      order-agent:./src/agents/order-agent \
-      product-agent:./src/agents/product-agent
+      order-orchestrator:./src/agents/order-orchestrator \
+      order:./src/agents/order \
+      product-search:./src/agents/product-search \
+      my-new-agent:./src/agents/my-new-agent
     ```
 
   - Re-run:
@@ -127,9 +149,9 @@ src/
     ```
 
 - **Change model or project endpoint**
-  - The script `src/deploy_agents.py` reads `AZURE_AI_PROJECT_ENDPOINT` and `MODEL_DEPLOYMENT_NAME` from the environment (`.env` file).
+  - The script `src/deploy_agents.py` reads `AZURE_AI_PROJECT_ENDPOINT` and `AZURE_AI_MODEL_DEPLOYMENT_NAME` from the environment (`.env` file).
   - `AZURE_AI_PROJECT_ENDPOINT` is provided by the Bicep deployment and `azd`.
-  - You can override `MODEL_DEPLOYMENT_NAME` in the root `.env` if needed.
+  - You can override `AZURE_AI_MODEL_DEPLOYMENT_NAME` in the root `.env` if needed (defaults to `o4-mini`).
 
 ## Running the Deployment Script Manually (Optional)
 
